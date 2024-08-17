@@ -180,9 +180,7 @@ export default function Home() {
               src={"./assets/icon.png"}
               style={{
                 width: "160px",
-
                 height: "160px",
-
                 marginTop: "3.5%",
                 marginRight: "20px",
               }}
@@ -364,7 +362,7 @@ export default function Home() {
               alignContent: "center",
             }}
           >
-            <Grid item xs={9} lg md={2}>
+            <Grid item xs={9} md={3}>
               <Box
                 sx={{
                   pb: 3,
@@ -415,7 +413,7 @@ export default function Home() {
                 </Button>
               </Box>
             </Grid>
-            <Grid item xs={9} md={2}>
+            <Grid item xs={9} md={3}>
               <Box
                 sx={{
                   pb: 3,
