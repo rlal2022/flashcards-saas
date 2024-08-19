@@ -19,9 +19,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  AppBar,
+  Toolbar,
 } from "@mui/material";
 import { db } from "../firebase.js";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton } from "@clerk/nextjs";
 
 export default function Generate() {
   const [flashcards, setFlashcards] = useState([]);
@@ -60,7 +62,95 @@ export default function Generate() {
   };
 
   if (!user) {
-    return <div>You need to sign in to view this page.</div>;
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          bgcolor: "#020303",
+          width: "100%",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "row" }}>
+          <img
+            src={"../assets/icon.png"}
+            style={{
+              width: "160px",
+              height: "160px",
+              marginTop: "3.5%",
+              marginRight: "20px",
+            }}
+          />
+          <Typography variant="h1" sx={{ color: "#fff", fontSize: "12rem" }}>
+            Noteify AI
+          </Typography>
+        </Box>
+
+        <Typography variant="h2" sx={{ color: "#fff" }}>
+          You need to sign in to view this page
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            mt: "2rem",
+          }}
+        >
+          <Button
+            color="inherit"
+            sx={{
+              variant: "contained",
+              p: "10px 40px 10px 40px",
+              mr: 3,
+              fontSize: "24px",
+              fontWeight: "400",
+              color: "#fff",
+              bgcolor: "transparent",
+              border: "1px solid white",
+              boxshadow: "0 0.5rem -0.4em rgba(255,255,255,0.5)",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              "&:hover": {
+                bgcolor: "rgba(245, 245, 245, 0.1)",
+                borderColor: "white",
+                boxshadow: "0 0.5em 0.5em -0.4em rgba(255,255,255,0.7)",
+                transform: "translateY(-0.25em)",
+              },
+            }}
+            href="/sign-in"
+          >
+            Login
+          </Button>
+          <Button
+            color="inherit"
+            sx={{
+              variant: "contained",
+              p: "10px 40px 10px 40px",
+              fontSize: "24px",
+              fontWeight: "400",
+              color: "#fff",
+              bgcolor: "transparent",
+              border: "1px solid white",
+              boxshadow: "0 0.5rem -0.4em rgba(255,255,255,0.5)",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              "&:hover": {
+                bgcolor: "rgba(245, 245, 245, 0.1)",
+                borderColor: "white",
+                boxshadow: "0 0.5em 0.5em -0.4em rgba(255,255,255,0.7)",
+                transform: "translateY(-0.25em)",
+              },
+            }}
+            href="/sign-up"
+          >
+            Sign Up
+          </Button>
+        </Box>
+      </Container>
+    );
   }
 
   const saveFlashcards = async () => {
@@ -94,7 +184,85 @@ export default function Generate() {
   };
 
   return (
-    <Container maxWidth="md">
+    <Container
+      maxWidth="false"
+      sx={{ bgcolor: "#020303", maxWidth: "100%", height: "100vh" }}
+    >
+      <AppBar
+        position="static"
+        sx={{
+          backgroundColor: "transparent",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+        }}
+      >
+        <Toolbar>
+          <img
+            src="../assets/icon.png"
+            style={{
+              maxWidth: "30px",
+              maxHeight: "30px",
+              marginRight: "10px",
+            }}
+          />
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Noteify AI
+          </Typography>
+          <Button
+            href="#home"
+            color="inherit"
+            sx={{
+              "&:hover": {
+                color: "rgba(245, 245, 245, 0.7)",
+              },
+            }}
+          >
+            Home
+          </Button>
+          <Button
+            href="#home"
+            color="inherit"
+            sx={{
+              "&:hover": {
+                color: "rgba(245, 245, 245, 0.7)",
+              },
+            }}
+          >
+            Features
+          </Button>
+          <Button
+            href="#home"
+            color="inherit"
+            sx={{
+              "&:hover": {
+                color: "rgba(245, 245, 245, 0.7)",
+              },
+            }}
+          >
+            Pricing
+          </Button>
+          {!user ? (
+            <>
+              <Button
+                color="inherit"
+                sx={{ "&:hover": { color: "rgba(245, 245, 245, 0.7)" } }}
+                href="/sign-in"
+              >
+                Login
+              </Button>
+              <Button
+                color="inherit"
+                sx={{ "&:hover": { color: "rgba(245, 245, 245, 0.7)" } }}
+                href="/sign-up"
+              >
+                Sign Up
+              </Button>
+            </>
+          ) : (
+            <UserButton />
+          )}
+        </Toolbar>
+      </AppBar>
+
       <Box
         sx={{
           mt: 4,
@@ -104,25 +272,54 @@ export default function Generate() {
           alignItems: "center",
         }}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            color: "#fff",
+            mb: 3,
+          }}
+        >
           Generate Flashcards
         </Typography>
-        <Paper sx={{ pt: 4, width: "100%", p: 2 }}>
+        <Paper
+          sx={{ pt: 4, width: "100%", p: 2, bgcolor: "#030302", color: "#fff" }}
+        >
           <TextField
             value={text}
             onChange={(e) => setText(e.target.value)}
             label="Enter Text"
+            InputLabelProps={{
+              style: {
+                color: "#fff",
+              },
+            }}
             variant="outlined"
+            inputProps={{
+              style: {
+                color: "#fff",
+              },
+            }}
             fullWidth
             multiline
             rows={4}
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, bgcolor: "#0A0A0A", color: "#fff" }}
           />
           <Button
             variant="contained"
-            color="primary"
+            color="inherit"
             onClick={handleSubmit}
             fullWidth
+            sx={{
+              bgcolor: "transparent",
+              color: "#fff",
+              border: "1px solid white",
+              "&:hover": {
+                bgcolor: "transparent",
+                color: "rgba(245, 245, 245, 0.7)",
+                "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+              },
+            }}
           >
             Submit
           </Button>

@@ -123,7 +123,9 @@ export default function Home() {
               <Button
                 href="#pricing"
                 color="inherit"
-                sx={{ "&:hover": { color: "rgba(245, 245, 245, 0.7)" } }}
+                sx={{
+                  "&:hover": { color: "rgba(245, 245, 245, 0.7)" },
+                }}
               >
                 Pricing
               </Button>
