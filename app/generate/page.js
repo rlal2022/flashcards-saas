@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { writeBatch, doc, collection, getDoc } from "firebase/firestore";
 import {
   Box,
@@ -21,9 +21,17 @@ import {
   DialogActions,
   AppBar,
   Toolbar,
+  IconButton,
+  Alert,
+  Divider,
 } from "@mui/material";
+import MicIcon from "@mui/icons-material/Mic";
+import MicOffIcon from "@mui/icons-material/MicOff";
 import { db } from "../firebase.js";
 import { useUser, UserButton } from "@clerk/nextjs";
+import "../globals.css";
+import Link from "next/link.js";
+import { GitHub, LinkedIn } from "@mui/icons-material";
 
 export default function Generate() {
   const [flashcards, setFlashcards] = useState([]);
@@ -31,8 +39,14 @@ export default function Generate() {
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const { user } = useUser();
+
+  useEffect(() => {
+    document.documentElement.style.backgroundColor = "#020303";
+  }, []);
 
   const handleSubmit = async () => {
     fetch("/api/generate", {
@@ -59,6 +73,44 @@ export default function Generate() {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleSpeechRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setText(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        setError("Speech recognition error: " + event.error);
+        setIsListening(false);
+      };
+
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    } else {
+      setError("Your browser does not support speech recognition.");
+    }
   };
 
   if (!user) {
@@ -186,7 +238,7 @@ export default function Generate() {
   return (
     <Container
       maxWidth="false"
-      sx={{ bgcolor: "#020303", maxWidth: "100%", height: "100vh" }}
+      sx={{ bgcolor: "#020303", maxWidth: "100%", height: "100%" }}
     >
       <AppBar
         position="static"
@@ -282,9 +334,46 @@ export default function Generate() {
         >
           Generate Flashcards
         </Typography>
+
         <Paper
           sx={{ pt: 4, width: "100%", p: 2, bgcolor: "#030302", color: "#fff" }}
         >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignContent: "center",
+              justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <IconButton
+              color={isListening ? "secondary" : "primary"}
+              sx={{ width: "50px", height: "50px" }}
+              onClick={handleSpeechRecognition}
+            >
+              {isListening ? (
+                <MicOffIcon
+                  sx={{
+                    fontSize: "50px",
+                    m: 0,
+                    p: 0,
+                  }}
+                />
+              ) : (
+                <MicIcon sx={{ fontSize: "50px" }} />
+              )}
+            </IconButton>
+            <Alert
+              severity="info"
+              variant="filled"
+              sx={{ ml: "1%", maxWidth: "90%", mb: 2 }}
+            >
+              Want to generate flashcards faster? Click the mic button to speak
+              your text instead of typing!
+            </Alert>
+          </Box>
+
           <TextField
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -327,7 +416,11 @@ export default function Generate() {
       </Box>
       {flashcards.length > 0 && (
         <Box sx={{ mt: 4 }}>
-          <Typography variant="h5" gutterBottom>
+          <Typography
+            variant="h5"
+            sx={{ display: "flex", justifyContent: "center", color: "#fff" }}
+            gutterBottom
+          >
             Flashcards Preview
           </Typography>
           <Grid container spacing={3}>
@@ -344,6 +437,8 @@ export default function Generate() {
                   <CardActionArea onClick={() => handleCardClick(index)}>
                     <CardContent
                       sx={{
+                        color: "#fff",
+                        bgcolor: "#020303",
                         perspective: "1000px",
                         position: "relative",
                         width: "100%",
@@ -371,7 +466,7 @@ export default function Generate() {
                           padding: 2,
                           boxSizing: "border-box",
                           borderRadius: "10px",
-                          backgroundColor: "#f5f5f5",
+                          backgroundColor: "#0A0A0A",
                         },
                         "& > div > div:nth-of-type(2)": {
                           transform: "rotateY(180deg)",
@@ -397,16 +492,47 @@ export default function Generate() {
             ))}
           </Grid>
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="secondary" onClick={handleOpen}>
+            <Button
+              variant="contained"
+              color="inherit"
+              sx={{
+                bgcolor: "transparent",
+                color: "#fff",
+                border: "1px solid white",
+                mb: 5,
+                "&:hover": {
+                  bgcolor: "transparent",
+                  color: "rgba(245, 245, 245, 0.7)",
+                  "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+                },
+              }}
+              onClick={handleOpen}
+            >
               Save
             </Button>
           </Box>
         </Box>
       )}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Save Flashcards</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
+        <DialogTitle
+          sx={{
+            bgcolor: "#020303",
+            color: "#fff",
+          }}
+        >
+          Save Flashcards
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            bgcolor: "#020303",
+            color: "#fff",
+          }}
+        >
+          <DialogContentText
+            sx={{
+              color: "#fff",
+            }}
+          >
             Enter a name for the flashcard set
           </DialogContentText>
           <TextField
@@ -419,13 +545,232 @@ export default function Generate() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             variant="outlined"
+            sx={{
+              bgcolor: "#0A0A0A",
+            }}
+            InputProps={{
+              style: {
+                color: "#fff",
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: "#fff",
+              },
+            }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={saveFlashcards}>Save</Button>
+        <DialogActions
+          sx={{
+            bgcolor: "#020303",
+            color: "#fff",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            onClick={saveFlashcards}
+            sx={{
+              bgcolor: "transparent",
+              color: "#fff",
+              border: "1px solid white",
+              mb: 5,
+
+              "&:hover": {
+                bgcolor: "transparent",
+                color: "rgba(245, 245, 245, 0.7)",
+                "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+              },
+            }}
+          >
+            Save
+          </Button>
+          <Button
+            onClick={handleClose}
+            sx={{
+              bgcolor: "transparent",
+              color: "#fff",
+              border: "1px solid white",
+              mb: 5,
+              "&:hover": {
+                bgcolor: "transparent",
+                color: "rgba(245, 245, 245, 0.7)",
+                "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+              },
+            }}
+          >
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
+      <Box
+        sx={{
+          bgcolor: "transparent",
+          color: "white",
+          py: 4,
+          mt: "auto",
+        }}
+      >
+        <Divider
+          orientation="horizontal"
+          component="div"
+          sx={{ background: "#fff", mb: 5 }}
+        />
+        <Container maxWidth="lg">
+          <Grid container spacing={4}>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ display: "flex", flexDirection: "row" }}>
+                <img
+                  src="/assets/icon.png"
+                  alt="App Icon"
+                  style={{
+                    maxWidth: "30px",
+                    maxHeight: "30px",
+                    marginRight: "10px",
+                  }}
+                />
+                <Typography variant="h5" gutterBottom>
+                  Noteify AI
+                </Typography>
+              </Box>
+
+              <Typography variant="body2">
+                Simplify your study sessions with our powerful flashcard tool.
+              </Typography>
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              sm={4}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                color: "#fff",
+              }}
+            >
+              <Typography variant="h5" gutterBottom>
+                Quick Links
+              </Typography>
+              <Link
+                href="/"
+                color="inherit"
+                underline="none"
+                sx={{
+                  display: "block",
+                  my: 1,
+                  color: "#fff",
+                  "&:hover": {
+                    color: "rgba(245, 245, 245, 0.7)",
+                    "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+                  },
+                }}
+              >
+                Home
+              </Link>
+              <Link
+                href="/features"
+                color="inherit"
+                underline="none"
+                sx={{
+                  display: "block",
+                  my: 1,
+                  color: "#fff",
+                  "&:hover": {
+                    color: "rgba(245, 245, 245, 0.7)",
+                    "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+                  },
+                }}
+              >
+                Features
+              </Link>
+              <Link
+                href="/pricing"
+                color="inherit"
+                underline="none"
+                sx={{
+                  display: "block",
+                  my: 1,
+                  color: "#fff",
+                  "&:hover": {
+                    color: "rgba(245, 245, 245, 0.7)",
+                    "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+                  },
+                }}
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/contact"
+                color="inherit"
+                underline="none"
+                sx={{
+                  display: "block",
+                  my: 1,
+                  color: "#fff",
+                  "&:hover": {
+                    color: "rgba(245, 245, 245, 0.7)",
+                    "&:active": { color: "rgba(245, 245, 245, 0.7)" },
+                  },
+                }}
+              >
+                Contact Us
+              </Link>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Typography variant="h5" gutterBottom>
+                Follow Us
+              </Typography>
+              <Link
+                href="#"
+                color="inherit"
+                underline="none"
+                sx={{ display: "block", my: 1 }}
+              >
+                <GitHub
+                  sx={{
+                    height: "50px",
+                    width: "50px",
+                    color: "#fff",
+                    mr: 1,
+                    "&:hover": {
+                      boxshadow: "0 0.5em 0.5em -0.4em rgba(255,255,255,0.7)",
+                      transform: "translateY(-0.25em)",
+                    },
+                  }}
+                />
+              </Link>
+
+              <Link
+                href="#"
+                color="inherit"
+                underline="none"
+                sx={{ display: "block", my: 1 }}
+              >
+                <LinkedIn
+                  sx={{
+                    height: "50px",
+                    width: "50px",
+                    color: "#fff",
+                    "&:hover": {
+                      boxshadow: "0 0.5em 0.5em -0.4em rgba(255,255,255,0.7)",
+                      transform: "translateY(-0.25em)",
+                    },
+                  }}
+                />
+              </Link>
+            </Grid>
+          </Grid>
+
+          <Box mt={4} textAlign="center">
+            <Typography variant="body2">
+              &copy; {new Date().getFullYear()} Noteify AI. All rights reserved.
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
     </Container>
   );
 }
